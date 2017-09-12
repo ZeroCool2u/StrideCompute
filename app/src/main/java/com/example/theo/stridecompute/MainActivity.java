@@ -1,10 +1,10 @@
 package com.example.theo.stridecompute;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,17 +15,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startButton(View v) {
-        Log.i("DroneTeamHW1", "Service started");
-
-        Intent i = new Intent(getApplicationContext(), AccelerometerService.class);
+        Intent i = new Intent(this, AccelerometerService.class);
         startService(i);
+        Toast.makeText(this, "Service started.", Toast.LENGTH_SHORT).show();
     }
 
     public void stopButton(View v) {
-        Log.i("DroneTeamHW1", "Service stopped");
-
-        Intent i = new Intent(getApplicationContext(), AccelerometerService.class);
+        Intent i = new Intent(this, AccelerometerService.class);
         stopService(i);
+        Toast.makeText(this, "Service stopped.", Toast.LENGTH_SHORT).show();
     }
 
 

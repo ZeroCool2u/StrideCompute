@@ -1,6 +1,5 @@
 package com.example.theo.stridecompute;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
@@ -11,10 +10,16 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 public class AccelerometerService extends Service implements SensorEventListener {
+    protected LinkedBlockingQueue<SensorEvent> incomingReadings = new LinkedBlockingQueue<>();
     protected SensorManager sensorManager;
     protected Sensor accelerometer;
     protected NotificationManager notificationManager;
+
+    public AccelerometerService() {
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -23,7 +28,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 
     @Override
     public void onCreate() {
-        notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -53,4 +58,5 @@ public class AccelerometerService extends Service implements SensorEventListener
     public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
+
 }
