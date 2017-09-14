@@ -91,9 +91,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 
         File file = new File(path, fileName);
         // Make sure the Downloads directory exists.
-        if (!path.mkdirs()) {
-            throw new RuntimeException("Dude, we couldn't even make that file, wtf.");
-        }
+        path.mkdirs();
         saveLocation = file;
         try {
             f = new FileWriter(saveLocation, true);
@@ -117,17 +115,6 @@ public class AccelerometerService extends Service implements SensorEventListener
             Log.e("Exception", "File write failed: " + e.toString());
         }
 
-    }
-
-    public void run() {
-        // get object b from shared queue
-        long[] nextEvent = new long[5];
-        try {
-            nextEvent = incomingReadings.take();
-        } catch (InterruptedException e) {
-            Log.e("Exception", "Reading retrieval from queue failed.");
-        }
-        writeToFile(nextEvent);
     }
 
     @Override
@@ -161,7 +148,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 
         incomingReadings.offer(nextEvent);
 
-        //Log.i("Acceleration", e.values[0] + "," + e.values[1] + "," + e.values[2]);
+        Log.i("Acceleration", e.values[0] + "," + e.values[1] + "," + e.values[2]);
 
     }
 
