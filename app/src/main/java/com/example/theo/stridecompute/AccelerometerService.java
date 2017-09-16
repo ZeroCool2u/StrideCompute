@@ -1,14 +1,17 @@
 package com.example.theo.stridecompute;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import java.io.File;
@@ -28,6 +31,12 @@ public class AccelerometerService extends Service implements SensorEventListener
     protected Sensor gyroscope;
     protected NotificationManager notificationManager;
 
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
     public AccelerometerService() {
     }
 
@@ -43,7 +52,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
-        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
@@ -52,26 +61,47 @@ public class AccelerometerService extends Service implements SensorEventListener
         if (!isExternalStorageWritable()) {
             throw new RuntimeException("External storage is not writable, damn get it together.");
         }
+
+
         createExternalStoragePublicCSV();
+
+        try {
+            f.write("This is a test.\n");
+            f.write("This is a second test.");
+            Log.i("Test", "wrote string");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         new Thread(new Runnable() {
             public void run() {
                 while (RUNFLAG) {
+                    if(incomingReadings.size() != 0){
                     long[] nextEvent = new long[5];
                     try {
                         nextEvent = incomingReadings.take();
+                        Log.i("test", String.valueOf(nextEvent[0]));
+                        Log.i("test", String.valueOf(nextEvent[1]));
+                        Log.i("test", String.valueOf(nextEvent[2]));
+                        Log.i("test", String.valueOf(nextEvent[3]));
+                        Log.i("test", String.valueOf(nextEvent[4]));
                     } catch (InterruptedException e) {
                         Log.e("Exception", "Reading retrieval from queue failed.");
                     }
                     // a potentially  time consuming task
                     writeToFile(nextEvent);
+                    }
                 }
             }
         }).start();
 
 
 
+
+
         Log.i("Acceleration", "StartID: " + startID + "-> " + intent);
+
+
 
         return START_STICKY;
     }
@@ -80,7 +110,17 @@ public class AccelerometerService extends Service implements SensorEventListener
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equals(state);
-    }
+
+        // Check if we have write permission
+        /*int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Log.i("Test", String.valueOf(permission));
+        Log.i("Test", String.valueOf(PackageManager.PERMISSION_GRANTED));
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            return false;}
+
+         return true;*/
+        }
+
 
     void createExternalStoragePublicCSV() {
         // Create a path where we will place our csv in the user's
@@ -93,9 +133,11 @@ public class AccelerometerService extends Service implements SensorEventListener
         // Make sure the Downloads directory exists.
         path.mkdirs();
         saveLocation = file;
+        Log.i("Testing", "Passed saveLocation");
         try {
             f = new FileWriter(saveLocation, true);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException("Seriously, we just had this, what happened!?");
         }
     }
@@ -103,9 +145,9 @@ public class AccelerometerService extends Service implements SensorEventListener
     private void writeToFile(long[] data) {
         String dataPoint;
         if (data[1] == 0) {
-            dataPoint = data[0] + ",A," + data[2] + "," + data[3] + "," + data[4];
+            dataPoint = data[0] + ",A," + data[2] + "," + data[3] + "," + data[4] + "\n";
         } else {
-            dataPoint = data[0] + ",G," + data[2] + "," + data[3] + "," + data[4];
+            dataPoint = data[0] + ",G," + data[2] + "," + data[3] + "," + data[4] + "\n";
         }
 
         try {
@@ -148,7 +190,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 
         incomingReadings.offer(nextEvent);
 
-        Log.i("Acceleration", e.values[0] + "," + e.values[1] + "," + e.values[2]);
+        //Log.i("Acceleration", e.values[0] + "," + e.values[1] + "," + e.values[2]);
 
     }
 
