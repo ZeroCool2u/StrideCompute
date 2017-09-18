@@ -65,13 +65,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 
         createExternalStoragePublicCSV();
 
-        try {
-            f.write("This is a test.\n");
-            f.write("This is a second test.");
-            Log.i("Test", "wrote string");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        RUNFLAG = true;
 
         new Thread(new Runnable() {
             public void run() {
@@ -86,7 +80,7 @@ public class AccelerometerService extends Service implements SensorEventListener
                         Log.i("test", String.valueOf(nextEvent[3]));
                         Log.i("test", String.valueOf(nextEvent[4]));
                     } catch (InterruptedException e) {
-                        Log.e("Exception", "Reading retrieval from queue failed.");
+                        Log.i("Exception", "Reading retrieval from queue failed.");
                     }
                     // a potentially  time consuming task
                     writeToFile(nextEvent);
@@ -96,12 +90,7 @@ public class AccelerometerService extends Service implements SensorEventListener
         }).start();
 
 
-
-
-
         Log.i("Acceleration", "StartID: " + startID + "-> " + intent);
-
-
 
         return START_STICKY;
     }
@@ -111,14 +100,6 @@ public class AccelerometerService extends Service implements SensorEventListener
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equals(state);
 
-        // Check if we have write permission
-        /*int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        Log.i("Test", String.valueOf(permission));
-        Log.i("Test", String.valueOf(PackageManager.PERMISSION_GRANTED));
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            return false;}
-
-         return true;*/
         }
 
 
@@ -181,8 +162,11 @@ public class AccelerometerService extends Service implements SensorEventListener
         nextEvent[0] = e.timestamp;
         if (e.sensor.getType() == accelerometer.getType()) {
             nextEvent[1] = 0;
-        } else {
+        } else if(e.sensor.getType() == gyroscope.getType()) {
             nextEvent[1] = 1;
+        }
+        else{
+            Log.i("Sensor", "Unknown sensor data received.");
         }
         nextEvent[2] = (long) e.values[0];
         nextEvent[3] = (long) e.values[1];

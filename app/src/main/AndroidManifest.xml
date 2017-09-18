@@ -21,6 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <uses-feature
+            android:name="android.hardware.sensor.gyroscope"
+            android:required="true" />
 
         <service
             android:name=".AccelerometerService"
