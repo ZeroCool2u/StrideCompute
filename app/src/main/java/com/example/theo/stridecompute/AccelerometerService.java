@@ -4,14 +4,12 @@ import android.Manifest;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.IBinder;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import java.io.File;
@@ -22,20 +20,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static java.lang.System.currentTimeMillis;
 
 public class AccelerometerService extends Service implements SensorEventListener {
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
     protected static boolean RUNFLAG;
-    protected static LinkedBlockingQueue<long[]> incomingReadings = new LinkedBlockingQueue<>();
+    protected static LinkedBlockingQueue<float[]> incomingReadings = new LinkedBlockingQueue<>();
     protected static File saveLocation;
     protected static FileWriter f;
-    protected SensorManager sensorManager;
-    protected Sensor accelerometer;
-    protected Sensor gyroscope;
-    protected NotificationManager notificationManager;
-
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+    protected SensorManager sensorManager;
+    protected Sensor accelerometer;
+    protected Sensor gyroscope;
+    protected NotificationManager notificationManager;
 
     public AccelerometerService() {
     }
@@ -71,7 +68,7 @@ public class AccelerometerService extends Service implements SensorEventListener
             public void run() {
                 while (RUNFLAG) {
                     if(incomingReadings.size() != 0){
-                    long[] nextEvent = new long[5];
+                        float[] nextEvent = new float[5];
                     try {
                         nextEvent = incomingReadings.take();
                         Log.i("test", String.valueOf(nextEvent[0]));
@@ -123,7 +120,7 @@ public class AccelerometerService extends Service implements SensorEventListener
         }
     }
 
-    private void writeToFile(long[] data) {
+    private void writeToFile(float[] data) {
         String dataPoint;
         if (data[1] == 0) {
             dataPoint = data[0] + ",A," + data[2] + "," + data[3] + "," + data[4] + "\n";
@@ -158,7 +155,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 
     @Override
     public void onSensorChanged(SensorEvent e) {
-        long[] nextEvent = new long[5];
+        float[] nextEvent = new float[5];
         nextEvent[0] = e.timestamp;
         if (e.sensor.getType() == accelerometer.getType()) {
             nextEvent[1] = 0;
@@ -168,9 +165,9 @@ public class AccelerometerService extends Service implements SensorEventListener
         else{
             Log.i("Sensor", "Unknown sensor data received.");
         }
-        nextEvent[2] = (long) e.values[0];
-        nextEvent[3] = (long) e.values[1];
-        nextEvent[4] = (long) e.values[2];
+        nextEvent[2] = e.values[0];
+        nextEvent[3] = e.values[1];
+        nextEvent[4] = e.values[2];
 
         incomingReadings.offer(nextEvent);
 
